@@ -20,53 +20,61 @@ const transporter = nodemailer.createTransport({
     },
   });
 
+// Create new tracking
 exports.createNYSCTracking = async (req, res) => {
-  try {
-    const { email, status } = req.body;
-    await retryTxn(async (client) => insertNYSCTracking(client, email, status));
-    res.status(201).send("NYSC tracking created.");
-  } catch (error) {
-    res.status(500).send("Error creating NYSC tracking.");
-  }
-};
-
-exports.getNYSCTracking = async (req, res) => {
-  try {
-    const data = await retryTxn(async (client) => selectNYSCTracking(client));
-    res.status(200).json(data);
-  } catch (error) {
-    res.status(500).send("Error retrieving NYSC tracking.");
-  }
-};
-
-exports.updateNYSCTracking = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { newStatus } = req.body;
-    await retryTxn(async (client) => updateNYSCTracking(client, id, newStatus));
-    res.status(200).send("NYSC tracking updated.");
-  } catch (error) {
-    res.status(500).send("Error updating NYSC tracking.");
-  }
-};
-
-exports.deleteNYSCTracking = async (req, res) => {
-  try {
-    const { id } = req.params;
-    await retryTxn(async (client) => deleteNYSCTracking(client, id));
-    res.status(200).send("NYSC tracking deleted.");
-  } catch (error) {
-    res.status(500).send("Error deleting NYSC tracking.");
-  }
-};
-
-async function notifySubscribers(emailList, message) {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: emailList,
-    subject: "NYSC Registration Update",
-    text: message,
+    try {
+      const { email } = req.body; // no need for status here, set it to NULL
+      const status = null; // Set initial status as NULL
+      await retryTxn(async (client) => insertNYSCTracking(client, email, status));
+      res.status(201).send("NYSC tracking created.");
+    } catch (error) {
+      res.status(500).send("Error creating NYSC tracking.");
+    }
   };
+
+// Retrieve all tracking
+exports.getNYSCTracking = async (req, res) => {
+    try {
+      const data = await retryTxn(async (client) => selectNYSCTracking(client));
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).send("Error retrieving NYSC tracking.");
+    }
+  };
+
+// Update tracking
+exports.updateNYSCTracking = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { newStatus } = req.body;
+      await retryTxn(async (client) => updateNYSCTracking(client, id, newStatus));
+      res.status(200).send("NYSC tracking updated.");
+    } catch (error) {
+      res.status(500).send("Error updating NYSC tracking.");
+    }
+  };
+
+
+// Delete tracking
+exports.deleteNYSCTracking = async (req, res) => {
+    try {
+      const { id } = req.params;
+      await retryTxn(async (client) => deleteNYSCTracking(client, id));
+      res.status(200).send("NYSC tracking deleted.");
+    } catch (error) {
+      res.status(500).send("Error deleting NYSC tracking.");
+    }
+  };
+
+
+// Send email notifications to subscribers
+async function notifySubscribers(emailList, message) {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: emailList,
+      subject: "NYSC Registration Update",
+      text: message,
+    };
 
   try {
     await transporter.sendMail(mailOptions);
@@ -76,12 +84,12 @@ async function notifySubscribers(emailList, message) {
   }
 }
 
+// Check NYSC registration page and notify subscribers if there's a status change
 exports.checkNYSCRegistrationPage = async () => {
     try {
       for (const url of NYSC_URLS) {
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
-  
         const registrationText = $("#ctl00_ContentPlaceHolder1_pActiveReg").text().trim();
   
         if (registrationText.includes("Mobilization Batch")) {
@@ -98,7 +106,9 @@ exports.checkNYSCRegistrationPage = async () => {
   
             // Update the last known status for notified subscribers
             await retryTxn(async (client) =>
-              updateNYSCStatusForSubscribers(client, subscribersToNotify, registrationText)
+              Promise.all(subscribersToNotify.map(subscriber =>
+                updateNYSCTracking(client, subscriber._id, registrationText)
+              ))
             );
           }
         } else {
@@ -108,4 +118,13 @@ exports.checkNYSCRegistrationPage = async () => {
     } catch (error) {
       console.error("Error checking NYSC registration page:", error);
     }
-  };  
+  };
+
+  async function selectOutdatedNYSCSubscribers(client, currentStatus) {
+    const selectStatement = `
+      SELECT * FROM nysc_tracking 
+      WHERE last_known_status IS NULL OR last_known_status <> $1;
+    `;
+    const result = await client.query(selectStatement, [currentStatus]);
+    return result.rows;
+  }
