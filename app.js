@@ -24,6 +24,10 @@ cron.schedule("0 * * * *", () => {
   checkGitHubRepos();
 });
 
+// Schedule the job site check every 24 hours
+const cron = require("node-cron");
+cron.schedule("0 0 * * *", exports.checkJobSites); 
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
