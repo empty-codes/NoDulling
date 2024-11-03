@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS github_repo_tracking (
     _owner UUID,
     email VARCHAR(255) NOT NULL,  -- User's email to receive notifications
     repo_url VARCHAR(255) NOT NULL,  -- GitHub repository URL entered by the user
-    last_issue_count INT DEFAULT 0  -- Number of issues last counted for tracking
+    last_issue_count INT DEFAULT 0,  -- Number of open issues last counted for tracking
+    last_closed_count INT DEFAULT 0   -- Number of closed issues last counted for tracking
 );
 
 -- Create table for Job Site tracking

@@ -69,13 +69,13 @@ async function deleteNYSCTracking(client, id) {
 
 // INSERT operation for GitHub Repo Tracking
 async function insertGitHubRepoTracking(client, email, repoUrl) {
-  const id = uuidv4();
-  const insertStatement = `
-    INSERT INTO github_repo_tracking (_id, _createdDate, _updatedDate, _owner, email, repo_url, last_issue_count)
-    VALUES ($1, current_timestamp, current_timestamp, NULL, $2, $3, 0)
-  `;
-  await client.query(insertStatement, [id, email, repoUrl]);
-}
+    const id = uuidv4();
+    const insertStatement = `
+      INSERT INTO github_repo_tracking (_id, _createdDate, _updatedDate, _owner, email, repo_url, last_issue_count, last_closed_count)
+      VALUES ($1, current_timestamp, current_timestamp, NULL, $2, $3, 0, 0)
+    `;
+    await client.query(insertStatement, [id, email, repoUrl]);
+  }
 
 // SELECT operation for GitHub Repo Tracking
 async function selectGitHubRepoTracking(client) {
@@ -84,13 +84,16 @@ async function selectGitHubRepoTracking(client) {
     return result.rows;
   }
   
-  // UPDATE operation for GitHub Repo Tracking
-  async function updateGitHubRepoTracking(client, id, newIssueCount) {
+ // UPDATE operation for GitHub Repo Tracking
+async function updateGitHubRepoTracking(client, id, newIssueCount, newClosedCount) {
     const updateStatement = `
-      UPDATE github_repo_tracking SET last_issue_count = $1, _updatedDate = current_timestamp WHERE _id = $2;
+      UPDATE github_repo_tracking 
+      SET last_issue_count = $1, last_closed_count = $2, _updatedDate = current_timestamp 
+      WHERE _id = $3;
     `;
-    await client.query(updateStatement, [newIssueCount, id]);
+    await client.query(updateStatement, [newIssueCount, newClosedCount, id]);
   }
+  
   
   // DELETE operation for GitHub Repo Tracking
   async function deleteGitHubRepoTracking(client, id) {
