@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 const cron = require("node-cron");
 const app = express();
@@ -25,8 +27,9 @@ cron.schedule("0 * * * *", () => {
 });
 
 // Schedule the job site check every 24 hours
-const cron = require("node-cron");
-cron.schedule("0 0 * * *", exports.checkJobSites); 
+cron.schedule("0 0 * * *", () => {
+  checkJobSites();
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

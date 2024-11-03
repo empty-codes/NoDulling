@@ -2,8 +2,7 @@ const { Pool } = require("pg");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const nodemailer = require("nodemailer");
-const { insertJobSiteTracking, selectJobSiteTracking, updateJobSiteTracking } = require("../db");
-const pool = new Pool();
+const { insertJobSiteTracking, selectJobSiteTracking, updateJobSiteTracking, pool } = require("../db");
 
 // Set up nodemailer
 const transporter = nodemailer.createTransport({

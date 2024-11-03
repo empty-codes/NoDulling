@@ -2,7 +2,13 @@ const nodemailer = require("nodemailer");
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-const { retryTxn, insertNYSCTracking, selectNYSCTracking, updateNYSCTracking, deleteNYSCTracking } = require("../db");
+const {
+    insertNYSCTracking,
+    selectNYSCTracking,
+    updateNYSCTracking,
+    deleteNYSCTracking,
+    pool, // Import the database connection pool
+  } = require("../db");
 
 const NYSC_URLS = [
     "https://portal.nysc.org.ng/nysc/",
@@ -22,50 +28,65 @@ const transporter = nodemailer.createTransport({
 
 // Create new tracking
 exports.createNYSCTracking = async (req, res) => {
+    const client = await pool.connect(); // Get a client from the pool
     try {
-      const { email } = req.body; // no need for status here, set it to NULL
+      const { email, ownerId } = req.body; // Assuming ownerId is provided in the request
       const status = null; // Set initial status as NULL
-      await retryTxn(async (client) => insertNYSCTracking(client, email, status));
-      res.status(201).json({ message:"NYSC tracking created."});
+      await insertNYSCTracking(client, email, status, ownerId);
+      res.status(201).json({ message: "NYSC tracking created." });
     } catch (error) {
-      res.status(500).json({ error:"Error creating NYSC tracking."});
+      console.error("Error creating NYSC tracking:", error);
+      res.status(500).json({ error: "Error creating NYSC tracking." });
+    } finally {
+      client.release(); // Always release the client back to the pool
     }
   };
 
 // Retrieve all tracking
 exports.getNYSCTracking = async (req, res) => {
+    const client = await pool.connect();
     try {
-      const data = await retryTxn(async (client) => selectNYSCTracking(client));
+      const data = await selectNYSCTracking(client);
       res.status(200).json(data);
     } catch (error) {
-      res.status(500).json({ error:"Error retrieving NYSC tracking."});
+      console.error("Error retrieving NYSC tracking:", error);
+      res.status(500).json({ error: "Error retrieving NYSC tracking." });
+    } finally {
+      client.release();
     }
   };
 
 // Update tracking
 exports.updateNYSCTracking = async (req, res) => {
+    const client = await pool.connect();
     try {
       const { id } = req.params;
       const { newStatus } = req.body;
-      await retryTxn(async (client) => updateNYSCTracking(client, id, newStatus));
-      res.status(200).json({ message:"NYSC tracking updated."});
+      await updateNYSCTracking(client, id, newStatus);
+      res.status(200).json({ message: "NYSC tracking updated." });
     } catch (error) {
-      res.status(500).json({ error:"Error updating NYSC tracking."});
+      console.error("Error updating NYSC tracking:", error);
+      res.status(500).json({ error: "Error updating NYSC tracking." });
+    } finally {
+      client.release();
     }
   };
-
 
 // Delete tracking
 exports.deleteNYSCTracking = async (req, res) => {
+    const client = await pool.connect();
     try {
       const { id } = req.params;
-      await retryTxn(async (client) => deleteNYSCTracking(client, id));
-      res.status(200).json({ message:"NYSC tracking deleted."});
+      await deleteNYSCTracking(client, id);
+      res.status(200).json({ message: "NYSC tracking deleted." });
     } catch (error) {
-      res.status(500).json({ error:"Error deleting NYSC tracking."});
+      console.error("Error deleting NYSC tracking:", error);
+      res.status(500).json({ error: "Error deleting NYSC tracking." });
+    } finally {
+      client.release();
     }
   };
-
+  
 
 // Send email notifications to subscribers
 async function notifySubscribers(emailList, message) {
@@ -96,24 +117,23 @@ exports.checkNYSCRegistrationPage = async () => {
           console.log(`Registration active on ${url}: ${registrationText}`);
   
           // Fetch subscribers whose last known status is outdated
-          const subscribersToNotify = await retryTxn(async (client) =>
-            selectOutdatedNYSCSubscribers(client, registrationText)
-          );
+          const subscribersToNotify = await pool.connect()
+            .then(client => selectOutdatedNYSCSubscribers(client, registrationText).finally(() => client.release()));
   
           if (subscribersToNotify.length > 0) {
             const emailList = subscribersToNotify.map(subscriber => subscriber.email);
             await notifySubscribers(emailList, `NYSC Registration Update: ${registrationText}`);
   
             // Update the last known status for notified subscribers
-            await retryTxn(async (client) =>
-              Promise.all(subscribersToNotify.map(subscriber =>
-                updateNYSCTracking(client, subscriber._id, registrationText)
-              ))
-            );
+          const client = await pool.connect();
+          await Promise.all(subscribersToNotify.map(subscriber =>
+            updateNYSCTracking(client, subscriber._id, registrationText)
+          ));
+          client.release();
           }
         } else {
           console.log(`No active registration on ${url}`);
-        }
+        };
       }
     } catch (error) {
       console.error("Error checking NYSC registration page:", error);
