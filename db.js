@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require("uuid");
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   application_name: "tracking_app",
+  port: process.env.DB_PORT,
 });
 
 /* //const backoffInterval = 100; // milliseconds
