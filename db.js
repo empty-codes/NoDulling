@@ -37,13 +37,13 @@ async function retryTxn(client, operation) {
 // CRUD Operations
 
 // INSERT operation for NYSC Tracking
-async function insertNYSCTracking(client, email, status) {
+async function insertNYSCTracking(client, email, status, ownerId) {
   const id = uuidv4();
   const insertStatement = `
     INSERT INTO nysc_tracking (_id, _createdDate, _updatedDate, _owner, email, last_known_status)
-    VALUES ($1, current_timestamp, current_timestamp, NULL, $2, $3)
+    VALUES ($1, current_timestamp, current_timestamp, $2, $3, $4)
   `;
-  await client.query(insertStatement, [id, email, status]);
+  await client.query(insertStatement, [id, ownerId, email, status]);
 }
 
 // SELECT operation for NYSC Tracking
@@ -68,14 +68,14 @@ async function deleteNYSCTracking(client, id) {
 }
 
 // INSERT operation for GitHub Repo Tracking
-async function insertGitHubRepoTracking(client, email, repoUrl) {
+async function insertGitHubRepoTracking(client, email, repoUrl, ownerId) {
     const id = uuidv4();
     const insertStatement = `
       INSERT INTO github_repo_tracking (_id, _createdDate, _updatedDate, _owner, email, repo_url, last_issue_count, last_closed_count)
-      VALUES ($1, current_timestamp, current_timestamp, NULL, $2, $3, 0, 0)
-    `;
-    await client.query(insertStatement, [id, email, repoUrl]);
-  }
+      VALUES ($1, current_timestamp, current_timestamp, $2, $3, $4, 0, 0)
+  `;
+  await client.query(insertStatement, [id, ownerId, email, repoUrl]);
+}
 
 // SELECT operation for GitHub Repo Tracking
 async function selectGitHubRepoTracking(client) {
@@ -102,13 +102,13 @@ async function updateGitHubRepoTracking(client, id, newIssueCount, newClosedCoun
   }
 
   // INSERT operation for Job Site Tracking
-async function insertJobSiteTracking(client, email, siteUrl) {
+async function insertJobSiteTracking(client, email, siteUrl, ownerId) {
     const id = uuidv4();
     const insertStatement = `
       INSERT INTO job_site_tracking (_id, _createdDate, _updatedDate, _owner, email, site_url, last_job_count)
-      VALUES ($1, current_timestamp, current_timestamp, NULL, $2, $3, 0)
+      VALUES ($1, current_timestamp, current_timestamp, $2, $3, $4, 0)
     `;
-    await client.query(insertStatement, [id, email, siteUrl]);
+    await client.query(insertStatement, [id, ownerId, email, siteUrl]);
   }
   
   // SELECT operation for Job Site Tracking
