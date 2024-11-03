@@ -5,7 +5,9 @@ const app = express();
 const nyscRoutes = require("./routes/nyscRoutes");
 const githubRoutes = require("./routes/githubRoutes");
 const jobSiteRoutes = require("./routes/jobSiteRoutes");
+
 const { checkNYSCRegistrationPage } = require("./controllers/nyscController");
+const { checkGitHubRepos } = require("./controllers/githubController");
 
 app.use(express.json());
 app.use("/subscribe/nysc", nyscRoutes);
@@ -15,6 +17,11 @@ app.use("/subscribe/jobs", jobSiteRoutes);
 // Schedule to check the NYSC registration page every 10 minutes
 cron.schedule("*/10 * * * *", () => {
   checkNYSCRegistrationPage();
+});
+
+// Schedule to check the GitHub repositories every hour
+cron.schedule("0 * * * *", () => {
+  checkGitHubRepos();
 });
 
 const PORT = process.env.PORT || 3000;
