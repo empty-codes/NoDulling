@@ -26,9 +26,9 @@ exports.createNYSCTracking = async (req, res) => {
       const { email } = req.body; // no need for status here, set it to NULL
       const status = null; // Set initial status as NULL
       await retryTxn(async (client) => insertNYSCTracking(client, email, status));
-      res.status(201).send("NYSC tracking created.");
+      res.status(201).json({ message:"NYSC tracking created."});
     } catch (error) {
-      res.status(500).send("Error creating NYSC tracking.");
+      res.status(500).json({ error:"Error creating NYSC tracking."});
     }
   };
 
@@ -38,7 +38,7 @@ exports.getNYSCTracking = async (req, res) => {
       const data = await retryTxn(async (client) => selectNYSCTracking(client));
       res.status(200).json(data);
     } catch (error) {
-      res.status(500).send("Error retrieving NYSC tracking.");
+      res.status(500).json({ error:"Error retrieving NYSC tracking."});
     }
   };
 
@@ -48,9 +48,9 @@ exports.updateNYSCTracking = async (req, res) => {
       const { id } = req.params;
       const { newStatus } = req.body;
       await retryTxn(async (client) => updateNYSCTracking(client, id, newStatus));
-      res.status(200).send("NYSC tracking updated.");
+      res.status(200).json({ message:"NYSC tracking updated."});
     } catch (error) {
-      res.status(500).send("Error updating NYSC tracking.");
+      res.status(500).json({ error:"Error updating NYSC tracking."});
     }
   };
 
@@ -60,9 +60,9 @@ exports.deleteNYSCTracking = async (req, res) => {
     try {
       const { id } = req.params;
       await retryTxn(async (client) => deleteNYSCTracking(client, id));
-      res.status(200).send("NYSC tracking deleted.");
+      res.status(200).json({ message:"NYSC tracking deleted."});
     } catch (error) {
-      res.status(500).send("Error deleting NYSC tracking.");
+      res.status(500).json({ error:"Error deleting NYSC tracking."});
     }
   };
 

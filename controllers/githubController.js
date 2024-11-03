@@ -15,10 +15,10 @@ const transporter = nodemailer.createTransport({
 
 // Subscribe to a GitHub repository
 exports.createGitHubRepoTracking = async (req, res) => {
-  const { email, repoUrl } = req.body;
+  const { email, repoUrl, ownerId } = req.body;
 
-  if (!email || !repoUrl) {
-    return res.status(400).json({ error: "Email and repository URL are required." });
+  if (!email || !repoUrl || !ownerId) {
+    return res.status(400).json({ error: "Email, repository URL, and owner are required." });
   }
 
   try {
@@ -32,7 +32,7 @@ exports.createGitHubRepoTracking = async (req, res) => {
       }
 
       // Insert new subscription
-      await insertGitHubRepoTracking(client, email, repoUrl);
+      await insertGitHubRepoTracking(client, email, repoUrl, ownerId);
       res.status(201).json({ message: "Successfully subscribed to GitHub repository." });
     });
   } catch (error) {
@@ -54,21 +54,22 @@ exports.getGitHubRepoTracking = async (req, res) => {
 
 // Update GitHub repo tracking
 exports.updateGitHubRepoTracking = async (req, res) => {
-  const { id } = req.params;
-  const { newIssueCount } = req.body; // Assuming you're updating the last_issue_count
+    const { id } = req.params;
+    const { newIssueCount, newClosedCount } = req.body;
+  
+    if (newIssueCount === undefined || newClosedCount === undefined) {
+      return res.status(400).json({ error: "New issue and closed count are required." });
+    }
+  
+    try {
+      await retryTxn(async (client) => updateGitHubRepoTracking(client, id, newIssueCount, newClosedCount));
+      res.status(200).json({ message: "GitHub repo tracking updated." });
+    } catch (error) {
+      console.error("Error updating GitHub repo tracking:", error);
+      res.status(500).json({ error: "Error updating GitHub repo tracking." });
+    }
+  };
 
-  if (!newIssueCount) {
-    return res.status(400).json({ error: "New issue count is required." });
-  }
-
-  try {
-    await retryTxn(async (client) => updateGitHubRepoTracking(client, id, newIssueCount));
-    res.status(200).send("GitHub repo tracking updated.");
-  } catch (error) {
-    console.error("Error updating GitHub repo tracking:", error);
-    res.status(500).send("Error updating GitHub repo tracking.");
-  }
-};
 
 // Delete GitHub repo tracking
 exports.deleteGitHubRepoTracking = async (req, res) => {
@@ -76,10 +77,10 @@ exports.deleteGitHubRepoTracking = async (req, res) => {
 
   try {
     await retryTxn(async (client) => deleteGitHubRepoTracking(client, id));
-    res.status(200).send("GitHub repo tracking deleted.");
+    res.status(200).json({ message: "GitHub repo tracking updated." });
   } catch (error) {
     console.error("Error deleting GitHub repo tracking:", error);
-    res.status(500).send("Error deleting GitHub repo tracking.");
+    res.status(500).json({ error: "Error deleting GitHub repo tracking." });
   }
 };
 
@@ -128,19 +129,25 @@ exports.checkGitHubRepos = async () => {
   }
 };
 
-// Notify subscribers about new issues
 async function notifySubscribers(email, newIssues) {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "New GitHub Issues Alert",
-    text: `There are ${newIssues} new issues in your subscribed GitHub repository.`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("Notification sent to subscriber:", email);
-  } catch (error) {
-    console.error("Error sending email notifications:", error);
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "New GitHub Issues Alert",
+      text: `There are ${newIssues} new issues in your subscribed GitHub repository.`,
+    };
+  
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log("Notification sent to subscriber:", email);
+        break; // Exit loop on success
+      } catch (error) {
+        console.error("Error sending email notifications:", error);
+        if (attempt === 2) {
+          // Log final failure after last attempt
+          console.error(`Failed to send notification to ${email} after 3 attempts.`);
+        }
+      }
+    }
   }
-}
