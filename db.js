@@ -89,6 +89,8 @@ async function insertGitHubRepoTracking(client, email, repoUrl, ownerId) {
       VALUES ($1, current_timestamp, current_timestamp, $2, $3, $4, 0, 0)
   `;
   await client.query(insertStatement, [id, effectiveOwnerId, email, repoUrl]);
+
+  return id;
 }
 
 // SELECT operation for GitHub Repo Tracking

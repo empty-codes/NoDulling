@@ -31,7 +31,23 @@ exports.createGitHubRepoTracking = async (req, res) => {
     }
 
     // Insert new subscription
-    await insertGitHubRepoTracking(client, email, repoUrl, ownerId);
+    const newId = await insertGitHubRepoTracking(client, email, repoUrl, ownerId);
+    // Fetch the current issue counts
+    const issuesUrl = `${repoUrl}/issues`;
+    const response = await axios.get(issuesUrl);
+    const html = response.data;
+    const $ = cheerio.load(html);
+
+    // Extract open and closed issues count
+    const openIssuesText = $('a[data-ga-click="Issues, Table state, Open"]').text().trim();
+    const closedIssuesText = $('a[data-ga-click="Issues, Table state, Closed"]').text().trim();
+
+    const openIssueCount = parseInt(openIssuesText.split(' ')[0].replace(',', ''), 10);
+    const closedIssueCount = parseInt(closedIssuesText.split(' ')[0].replace(',', ''), 10);
+
+    // Update the record with the fetched counts
+    await updateGitHubRepoTracking(client, newId, openIssueCount, closedIssueCount);
+
     res.status(201).json({ message: "Successfully subscribed to GitHub repository." });
   } catch (error) {
     console.error("Error subscribing to GitHub repo:", error);
@@ -101,8 +117,10 @@ exports.checkGitHubRepos = async () => {
 
     for (const repo of repos) {
         try {
+        const issuesUrl = `${repo.repo_url}/issues`;
+        
         // Fetch the issues page HTML
-        const response = await axios.get(repo.repo_url);
+        const response = await axios.get(issuesUrl);
         const html = response.data;
         const $ = cheerio.load(html);
 

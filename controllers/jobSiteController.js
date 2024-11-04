@@ -42,18 +42,24 @@ exports.checkJobSites = async () => {
       const $ = cheerio.load(response.data);
 
       if (siteUrl.includes("greenhouse.io")) {
-        jobCount = $(".opening").length;
-      } else if (siteUrl.includes("myworkdayjobs.com")) {
-        jobCount = parseInt($("[data-automation-id='jobFoundText']").text().match(/\d+/)[0]);
-      } else if (siteUrl.includes("smartrecruiters.com")) {
-        jobCount = $(".opening-job").length;
-      } else if (siteUrl.includes("zohorecruit.com")) {
-        jobCount = $("[class^='cw-'][class*='-title']").length;
-      } else if (siteUrl.includes("bamboohr.com")) {
+        // For Greenhouse, check for 'opening' in <div> or 'job-post' in <tr>
+        jobCount = $("div.opening").length || $("tr.job-post").length;
+    } else if (siteUrl.includes("myworkdayjobs.com")) {
+        // For MyWorkdayJobs, look for job count inside a <p> element
+        jobCount = parseInt($("p[data-automation-id='jobFoundText']").text().match(/\d+/)[0]);
+    } else if (siteUrl.includes("smartrecruiters.com")) {
+        // For SmartRecruiters, ensure 'opening-job' is in an <li> element
+        jobCount = $("li.opening-job").length;
+    } else if (siteUrl.includes("zohorecruit.com")) {
+        // For ZohoRecruit, ensure class with 'cw-' and '-title' is inside an <a> element
+        jobCount = $("a[class^='cw-'][class*='-title']").length;
+    } else if (siteUrl.includes("bamboohr.com")) {
         jobCount = $("a[class^='jss-f']").length;
-      } else if (siteUrl.includes("seamlesshiring.com")) {
-        jobCount = $(".jobs-display").length;
-      }
+    } else if (siteUrl.includes("seamlesshiring.com")) {
+        // For SeamlessHiring, ensure 'jobs-display' is in a <div> element
+        jobCount = $("div.jobs-display").length;
+    }
+    
 
       if (jobCount !== lastJobCount) {
         await exports.notifyUser(email, siteUrl, jobCount - lastJobCount);

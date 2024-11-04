@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS nysc_tracking (
     _updatedDate TIMESTAMPTZ DEFAULT current_timestamp,
     _owner UUID NOT NULL,  -- Owner UUID to link the tracking record to a user
     email VARCHAR(255) NOT NULL,  -- User's email to receive notifications
-    last_known_status VARCHAR(50)  -- Last known status for NYSC registration
+    last_known_status VARCHAR(255)  -- Last known status for NYSC registration
 );
 
 -- Create table for GitHub Repository tracking
