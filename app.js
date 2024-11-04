@@ -12,11 +12,14 @@ const { checkNYSCRegistrationPage } = require("./controllers/nyscController");
 const { checkGitHubRepos } = require("./controllers/githubController");
 const { checkJobSites } = require("./controllers/jobSiteController");
 
+module.exports = app;
 
 app.use(express.json());
-app.use("/", nyscRoutes);
-app.use("/", githubRoutes);
-app.use("/", jobSiteRoutes);
+//app.use(express.static(__dirname + '/public'));
+app.use("/subscribe/nysc", nyscRoutes);
+app.use("/subscribe/github", githubRoutes);
+app.use("/subscribe/jobs", jobSiteRoutes);
+app.use(express.static('routes'));
 
 // Schedule to check the NYSC registration page every 10 minutes
 cron.schedule("*/10 * * * *", () => {
