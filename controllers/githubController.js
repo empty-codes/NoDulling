@@ -134,7 +134,7 @@ exports.checkGitHubRepos = async () => {
         // Compare with last counts
         if (openIssueCount > repo.last_issue_count) {
             // New open issue has been added
-            await notifySubscribers(repo.email, openIssueCount - repo.last_issue_count);
+            await notifySubscribers(repo.email, openIssueCount - repo.last_issue_count, issuesUrl);
         } else if (openIssueCount < repo.last_issue_count && closedIssueCount > repo.last_closed_count) {
             // An issue has been closed
             const closedDifference = closedIssueCount - repo.last_closed_count;
@@ -160,18 +160,18 @@ exports.checkGitHubRepos = async () => {
     }
 };
 
-async function notifySubscribers(email, newIssues) {
+async function notifySubscribers(email, newIssues, issuesUrl) {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "New GitHub Issues Alert",
-      text: `There are ${newIssues} new issues in your subscribed GitHub repository.`,
+      text: `There are ${newIssues} new issues in your subscribed GitHub repository: ${issuesUrl}.`,
     };
   
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         await transporter.sendMail(mailOptions);
-        console.log("Notification sent to subscriber:", email);
+        console.log("Github Issue Notification sent to subscriber:", email);
         break; // Exit loop on success
       } catch (error) {
         console.error("Error sending email notifications:", error);
