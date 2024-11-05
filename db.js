@@ -7,6 +7,24 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
+// Initial connection attempt
+const connectWithRetry = () => {
+  pool.connect()
+    .then(client => {
+      console.log("Connected to the database");
+      client.release(); // Release the client after successful connection
+    })
+    .catch(err => {
+      console.error("Database connection error:", err);
+      console.log("Retrying connection in 5 seconds...");
+      setTimeout(connectWithRetry, 5000); // Retry after 5 seconds
+    });
+};
+
+// Start the connection attempt
+connectWithRetry();
+
+
 /* //const backoffInterval = 100; // milliseconds
 //const maxTries = 5;
 
@@ -118,7 +136,7 @@ async function updateGitHubRepoTracking(client, id, newIssueCount, newClosedCoun
   }
 
   // INSERT operation for Job Site Tracking
-async function insertJobSiteTracking(client, email, siteUrl, ownerId) {
+async function insertJobSiteTracking(client, email, siteUrl, ownerId, initialJobCount) {
     const id = uuidv4();
     const defaultOwnerId = '09292c6b-60fa-42e6-ac73-041d2af69609';
 
@@ -127,9 +145,9 @@ async function insertJobSiteTracking(client, email, siteUrl, ownerId) {
 
     const insertStatement = `
       INSERT INTO job_site_tracking (_id, _createdDate, _updatedDate, _owner, email, site_url, last_job_count)
-      VALUES ($1, current_timestamp, current_timestamp, $2, $3, $4, 0)
+      VALUES ($1, current_timestamp, current_timestamp, $2, $3, $4, $5)
     `;
-    await client.query(insertStatement, [id, effectiveOwnerId, email, siteUrl]);
+    await client.query(insertStatement, [id, effectiveOwnerId, email, siteUrl, initialJobCount]);
   }
   
   // SELECT operation for Job Site Tracking
