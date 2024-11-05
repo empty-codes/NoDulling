@@ -21,19 +21,49 @@ app.use("/subscribe/github", githubRoutes);
 app.use("/subscribe/jobs", jobSiteRoutes);
 app.use(express.static('routes'));
 
-// Schedule to check the NYSC registration page every 10 minutes
-cron.schedule("*/10 * * * *", () => {
-  checkNYSCRegistrationPage();
+
+let isJobRunning = false;
+
+// Helper function to introduce a random delay
+const delay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 10000));
+
+// Schedule to check the NYSC registration page every 9 minutes
+cron.schedule("*/9 * * * *", async () => {
+  if (isJobRunning) return; // Exit if another job is already running
+  isJobRunning = true;
+  
+  try {
+    await delay();
+    await checkNYSCRegistrationPage();
+  } finally {
+    isJobRunning = false; 
+  }
 });
 
 // Schedule to check the GitHub repositories every hour
-cron.schedule("0 * * * *", () => {
-  checkGitHubRepos();
+cron.schedule("0 * * * *", async () => {
+  if (isJobRunning) return; 
+  isJobRunning = true;
+  
+  try {
+    await delay();
+    await checkGitHubRepos();
+  } finally {
+    isJobRunning = false; 
+  }
 });
 
-// Schedule the job site check every 24 hours
-cron.schedule("0 0 * * *", () => {
-  checkJobSites();
+// Schedule the job site check every 23.7 hours
+cron.schedule("*/1422 * * * *", async () => {
+  if (isJobRunning) return; 
+  isJobRunning = true;
+  
+  try {
+    await delay();
+    await checkJobSites();
+  } finally {
+    isJobRunning = false; 
+  }
 });
 
 const PORT = process.env.PORT || 8080;
