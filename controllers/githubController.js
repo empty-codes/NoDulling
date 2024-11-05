@@ -20,6 +20,15 @@ exports.createGitHubRepoTracking = async (req, res) => {
     return res.status(400).json({ error: "Email and repository URL are required." });
   }
 
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: "Invalid email format." });
+  }
+
   const client = await pool.connect();
   try {
     // Check if the repo URL already exists

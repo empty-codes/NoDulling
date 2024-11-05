@@ -2,11 +2,20 @@ const { Pool } = require("pg");
 const { deleteNYSCTrackingByEmail, deleteJobSiteTrackingByEmail, deleteGitHubRepoTrackingByEmail, pool } = require("../db");
 
 exports.unsubscribeUser = async (req, res) => {
-    const { email, type } = req.query;
+    const { email, type } = req.body;
 
     if (!email || !type) {
         return res.status(400).json({ message: 'Email and tracking type are required.' });
     }
+
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      };
+    
+      if (!isValidEmail(email)) {
+        return res.status(400).json({ error: "Invalid email format." });
+      }
 
     let client;
     try {

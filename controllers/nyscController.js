@@ -33,6 +33,15 @@ exports.createNYSCTracking = async (req, res) => {
       const { email, ownerId } = req.body; // Assuming ownerId is provided in the request
       let status = null; // Set initial status as NULL
 
+      const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      };
+    
+      if (!isValidEmail(email)) {
+        return res.status(400).json({ error: "Invalid email format." });
+      }
+
       // Check each NYSC URL for the current registration text
       for (const url of NYSC_URLS) {
         try {

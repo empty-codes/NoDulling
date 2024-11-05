@@ -19,6 +19,15 @@ exports.subscribeJobSite = async (req, res) => {
   const { email, siteUrl, ownerId } = req.body;
   let initialJobCount = 0;
 
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: "Invalid email format." });
+  }
+
   try {
     const response = await axios.get(siteUrl);
     const $ = cheerio.load(response.data);
