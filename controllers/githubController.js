@@ -160,25 +160,29 @@ exports.checkGitHubRepos = async () => {
     }
 };
 
+// Send email notifications to GitHub issue subscribers
 async function notifySubscribers(email, newIssues, issuesUrl) {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "New GitHub Issues Alert",
-      text: `There are ${newIssues} new issues in your subscribed GitHub repository: ${issuesUrl}.`,
-    };
-  
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log("Github Issue Notification sent to subscriber:", email);
-        break; // Exit loop on success
-      } catch (error) {
-        console.error("Error sending github issue email notifications:", error);
-        if (attempt === 2) {
-          // Log final failure after last attempt
-          console.error(`Failed to send github issue notification to ${email} after 3 attempts.`);
-        }
+  const unsubscribeLink = `https://emptycodes.wixstudio.io/nodulling/unsubscribe?type=github&email=${encodeURIComponent(email)}`;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "New GitHub Issues Alert",
+    text: `There are ${newIssues} new issues in your subscribed GitHub repository: ${issuesUrl}.\n\nIf you wish to unsubscribe, click here: ${unsubscribeLink}`,
+  };
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("GitHub Issue Notification sent to subscriber:", email);
+      break;
+    } catch (error) {
+      console.error("Error sending GitHub issue email notification:", error);
+      if (attempt === 2) {
+        console.error(`Failed to send GitHub issue notification to ${email} after 3 attempts.`);
       }
     }
   }
+}
+
+

@@ -117,13 +117,15 @@ exports.checkJobSites = async () => {
   client.release();
 };
 
-// Send notification email to user
+// Send notification email to job site user
 exports.notifyUser = async (email, siteUrl, jobDifference) => {
+  const unsubscribeLink = `https://emptycodes.wixstudio.io/nodulling/unsubscribe?type=job_site&email=${encodeURIComponent(email)}`;
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
     subject: "Job Site Update Notification",
-    text: `There are ${jobDifference} new job postings on ${siteUrl}. Check it out!`,
+    text: `There are ${jobDifference} new job postings on ${siteUrl}. Check it out!\n\nIf you wish to unsubscribe, click here: ${unsubscribeLink}`,
   };
 
   try {
@@ -133,5 +135,3 @@ exports.notifyUser = async (email, siteUrl, jobDifference) => {
     console.error("Error sending job site update notification email:", error);
   }
 };
-
-

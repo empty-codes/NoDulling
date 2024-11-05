@@ -108,22 +108,30 @@ exports.deleteNYSCTracking = async (req, res) => {
   };
   
 
-// Send email notifications to subscribers
+// Send email notifications to NYSC subscribers
 async function notifySubscribers(emailList, message) {
+  for (const email of emailList) {
+    const unsubscribeLink = `https://emptycodes.wixstudio.io/nodulling/unsubscribe?type=nysc&email=${encodeURIComponent(email)}`;
+
+    const personalizedMessage = `${message}\n\nIf you would like to unsubscribe, click here: ${unsubscribeLink}`;
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: emailList,
+      to: email,
       subject: "NYSC Registration Update",
-      text: message,
+      text: personalizedMessage,
     };
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("Nysc registration update notifications sent to subscribers");
-  } catch (error) {
-    console.error("Error sending nysc registration update email notifications:", error);
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`NYSC registration update notification sent to ${email}`);
+    } catch (error) {
+      console.error(`Error sending NYSC registration update email to ${email}:`, error);
+    }
   }
 }
+
+
 
 // Check NYSC registration page and notify subscribers if there's a status change
 exports.checkNYSCRegistrationPage = async () => {
