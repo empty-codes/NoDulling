@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require("express");
 const cron = require("node-cron");
+const cors = require("cors");
 const app = express();
 
 const nyscRoutes = require("./routes/nyscRoutes");
@@ -14,6 +15,7 @@ const { checkJobSites } = require("./controllers/jobSiteController");
 
 module.exports = app;
 
+app.use(cors());
 app.use(express.json());
 //app.use(express.static(__dirname + '/public'));
 app.use("/subscribe/nysc", nyscRoutes);

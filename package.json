@@ -1,4 +1,7 @@
 {
+  "name": "NoDulling",
+  "version": "1.0.0",
+  "main": "app.js",
   "dependencies": {
     "axios": "^1.7.7",
     "body-parser": "^1.20.3",
@@ -10,5 +13,8 @@
     "nodemailer": "^6.9.16",
     "pg": "^8.13.1",
     "uuid": "^11.0.2"
+  },
+  "scripts": {
+    "start": "node app.js" 
   }
 }
