@@ -174,10 +174,10 @@ async function notifySubscribers(email, newIssues, issuesUrl) {
         console.log("Github Issue Notification sent to subscriber:", email);
         break; // Exit loop on success
       } catch (error) {
-        console.error("Error sending email notifications:", error);
+        console.error("Error sending github issue email notifications:", error);
         if (attempt === 2) {
           // Log final failure after last attempt
-          console.error(`Failed to send notification to ${email} after 3 attempts.`);
+          console.error(`Failed to send github issue notification to ${email} after 3 attempts.`);
         }
       }
     }

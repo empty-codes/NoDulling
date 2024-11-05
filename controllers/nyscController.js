@@ -119,9 +119,9 @@ async function notifySubscribers(emailList, message) {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("Notifications sent to subscribers");
+    console.log("Nysc registration update notifications sent to subscribers");
   } catch (error) {
-    console.error("Error sending email notifications:", error);
+    console.error("Error sending nysc registration update email notifications:", error);
   }
 }
 
