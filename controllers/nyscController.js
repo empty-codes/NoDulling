@@ -31,7 +31,27 @@ exports.createNYSCTracking = async (req, res) => {
     const client = await pool.connect(); // Get a client from the pool
     try {
       const { email, ownerId } = req.body; // Assuming ownerId is provided in the request
-      const status = null; // Set initial status as NULL
+      let status = null; // Set initial status as NULL
+
+      // Check each NYSC URL for the current registration text
+      for (const url of NYSC_URLS) {
+        try {
+          const response = await axios.get(url);
+          const $ = cheerio.load(response.data);
+          const registrationText = $("#ctl00_ContentPlaceHolder1_pActiveReg").text().trim();
+
+          if (registrationText.includes("Mobilization Batch")) {
+            checkNYSCRegistrationPage();
+          }
+          else {
+            status = registrationText;
+            console.log(`Fetched current registration status: ${registrationText}`);
+            break;  // Exit loop once the first registration status is found
+          }
+        } catch (error) {
+          console.error(`Error fetching registration status from ${url}:`, error);
+        }
+      }
       await insertNYSCTracking(client, email, status, ownerId);
       res.status(201).json({ message: "NYSC tracking created." });
     } catch (error) {
@@ -122,7 +142,7 @@ exports.checkNYSCRegistrationPage = async () => {
   
           if (subscribersToNotify.length > 0) {
             const emailList = subscribersToNotify.map(subscriber => subscriber.email);
-            await notifySubscribers(emailList, `NYSC Registration Update: ${registrationText}`);
+            await notifySubscribers(emailList, `NYSC Registration is now Active on https://portal.nysc.org.ng/nysc/ : ${registrationText}`);
   
             // Update the last known status for notified subscribers
           const client = await pool.connect();
