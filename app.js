@@ -8,6 +8,7 @@ const app = express();
 const nyscRoutes = require("./routes/nyscRoutes");
 const githubRoutes = require("./routes/githubRoutes");
 const jobSiteRoutes = require("./routes/jobSiteRoutes");
+const unsubscribeRoutes = require('./routes/unsubscribeRoutes');
 
 const { checkNYSCRegistrationPage } = require("./controllers/nyscController");
 const { checkGitHubRepos } = require("./controllers/githubController");
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use("/subscribe/nysc", nyscRoutes);
 app.use("/subscribe/github", githubRoutes);
 app.use("/subscribe/jobs", jobSiteRoutes);
+app.use("/unsubscribe", unsubscribeRoutes);
 app.use(express.static('routes'));
 
 

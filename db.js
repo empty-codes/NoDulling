@@ -171,6 +171,26 @@ async function insertJobSiteTracking(client, email, siteUrl, ownerId, initialJob
     await client.query(deleteStatement, [id]);
   }
 
+  // Unsubscribe operations
+  // DELETE operation for NYSC Tracking by email
+  async function deleteNYSCTrackingByEmail(client, email) {
+    const deleteStatement = `DELETE FROM nysc_tracking WHERE email = $1;`;
+    await client.query(deleteStatement, [email]);
+  }
+
+  // DELETE operation for GitHub Repo Tracking by email
+  async function deleteGitHubRepoTrackingByEmail(client, email) {
+    const deleteStatement = `DELETE FROM github_repo_tracking WHERE email = $1;`;
+    await client.query(deleteStatement, [email]);
+  }
+
+  // DELETE operation for Job Site Tracking by email
+  async function deleteJobSiteTrackingByEmail(client, email) {
+    const deleteStatement = `DELETE FROM job_site_tracking WHERE email = $1;`;
+    await client.query(deleteStatement, [email]);
+  }
+
+
 /* // Run operations without retry logic
 (async () => {
     const client = await pool.connect();
@@ -267,12 +287,15 @@ module.exports = {
   selectNYSCTracking,
   updateNYSCTracking,
   deleteNYSCTracking,
+  deleteNYSCTrackingByEmail,
   insertGitHubRepoTracking,
   selectGitHubRepoTracking,
   updateGitHubRepoTracking,
   deleteGitHubRepoTracking,
+  deleteGitHubRepoTrackingByEmail,
   insertJobSiteTracking,
   selectJobSiteTracking,
   updateJobSiteTracking,
   deleteJobSiteTracking,
+  deleteJobSiteTrackingByEmail,
 };
