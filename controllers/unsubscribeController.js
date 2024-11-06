@@ -20,21 +20,27 @@ exports.unsubscribeUser = async (req, res) => {
     let client;
     try {
         client = await pool.connect(); 
+        let unsubscribeSuccess = false;
+
         switch (type) {
             case 'nysc':
-                await deleteNYSCTrackingByEmail(client, email);
+                unsubscribeSuccess = await deleteNYSCTrackingByEmail(client, email);
                 break;
             case 'github':
-                await deleteGitHubRepoTrackingByEmail(client, email);
+                unsubscribeSuccess = await deleteGitHubRepoTrackingByEmail(client, email);
                 break;
             case 'job_site':
-                await deleteJobSiteTrackingByEmail(client, email);
+                unsubscribeSuccess = await deleteJobSiteTrackingByEmail(client, email);
                 break;
             default:
                 return res.status(400).json({ message: 'Invalid type.' });
         }
 
-        res.status(200).json({ message: `Successfully unsubscribed ${email} from ${type} notifications.` });
+        if (unsubscribeSuccess) {
+            return res.status(200).json({ message: `Successfully unsubscribed ${email} from ${type} notifications.` });
+        } else {
+            return res.status(404).json({ message: `${email} not found for ${type} subscription.` });
+        }
     } catch (error) {
         console.error('Error during unsubscribe process:', error);
         res.status(500).json({ message: 'An error occurred while unsubscribing. Please try again later.' });
