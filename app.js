@@ -45,7 +45,7 @@ cron.schedule("*/9 * * * *", async () => {
 });
 
 // Schedule to check the GitHub repositories every hour
-cron.schedule("0 * * * *", async () => {
+cron.schedule("*/7 * * * *", async () => {
   if (isJobRunning) return; 
   isJobRunning = true;
   
@@ -57,8 +57,8 @@ cron.schedule("0 * * * *", async () => {
   }
 });
 
-// Schedule the job site check every 23.7 hours
-cron.schedule("*/1422 * * * *", async () => {
+// Schedule the job site check every 23.7 hours (1422 mins)
+cron.schedule("*/11 * * * *", async () => {
   if (isJobRunning) return; 
   isJobRunning = true;
   
