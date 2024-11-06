@@ -25,6 +25,8 @@
 
 ## API Structure
 
+It is currently hosted at: https://nodulling.onrender.com/. I recommend running the cron jobs on your localhost as it is expensive to do so on a hosted site.
+
 ### Endpoints
 
 1. **NYSC Registration Endpoint**
