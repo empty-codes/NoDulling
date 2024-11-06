@@ -69,49 +69,51 @@ app.get("/", (req, res) => {
 
 
 
-let isJobRunning = false;
+// In deployment, cron jobs run separately
 
-// Helper function to introduce a random delay
-const delay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 10000));
+// let isJobRunning = false;
 
-// Schedule to check the NYSC registration page every 9 minutes
-cron.schedule("*/9 * * * *", async () => {
-  if (isJobRunning) return; // Exit if another job is already running
-  isJobRunning = true;
+// // Helper function to introduce a random delay
+// const delay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 10000));
+
+// // Schedule to check the NYSC registration page every 9 minutes
+// cron.schedule("*/9 * * * *", async () => {
+//   if (isJobRunning) return; // Exit if another job is already running
+//   isJobRunning = true;
   
-  try {
-    await delay();
-    await checkNYSCRegistrationPage();
-  } finally {
-    isJobRunning = false; 
-  }
-});
+//   try {
+//     await delay();
+//     await checkNYSCRegistrationPage();
+//   } finally {
+//     isJobRunning = false; 
+//   }
+// });
 
-// Schedule to check the GitHub repositories every hour
-cron.schedule("*/7 * * * *", async () => {
-  if (isJobRunning) return; 
-  isJobRunning = true;
+// // Schedule to check the GitHub repositories every hour
+// cron.schedule("*/7 * * * *", async () => {
+//   if (isJobRunning) return; 
+//   isJobRunning = true;
   
-  try {
-    await delay();
-    await checkGitHubRepos();
-  } finally {
-    isJobRunning = false; 
-  }
-});
+//   try {
+//     await delay();
+//     await checkGitHubRepos();
+//   } finally {
+//     isJobRunning = false; 
+//   }
+// });
 
-// Schedule the job site check every 23.7 hours (1422 mins)
-cron.schedule("*/11 * * * *", async () => {
-  if (isJobRunning) return; 
-  isJobRunning = true;
+// // Schedule the job site check every 23.7 hours (1422 mins)
+// cron.schedule("*/11 * * * *", async () => {
+//   if (isJobRunning) return; 
+//   isJobRunning = true;
   
-  try {
-    await delay();
-    await checkJobSites();
-  } finally {
-    isJobRunning = false; 
-  }
-});
+//   try {
+//     await delay();
+//     await checkJobSites();
+//   } finally {
+//     isJobRunning = false; 
+//   }
+// });
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
