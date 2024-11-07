@@ -60,6 +60,24 @@ exports.subscribeJobSite = async (req, res) => {
   }
   
     await insertJobSiteTracking(client, email, siteUrl, ownerId, initialJobCount);
+
+    // Send email notification after successful subscription
+    const subMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.NOT_EMAIL, 
+      subject: 'New Job Site Subscription',
+      text: `A new user has subscribed to Job Site tracking.}.`,
+    };
+
+    // Send email without affecting subscription logic
+    transporter.sendMail(subMailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email: ", error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
+
     res.status(200).json({ message: "Subscribed to job site updates successfully." });
   }  catch (error) {
     console.error("Error subscribing to job site:", error);

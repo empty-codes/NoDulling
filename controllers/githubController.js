@@ -41,6 +41,24 @@ exports.createGitHubRepoTracking = async (req, res) => {
 
     // Insert new subscription
     const newId = await insertGitHubRepoTracking(client, email, repoUrl, ownerId);
+
+    // Send email notification after successful subscription
+    const subMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.NOT_EMAIL, 
+      subject: 'New Github Subscription',
+      text: `A new user has subscribed to Github Issue tracking.}.`,
+    };
+
+    // Send email without affecting subscription logic
+    transporter.sendMail(subMailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email: ", error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
+
     // Fetch the current issue counts
     const issuesUrl = `${repoUrl}/issues`;
     const response = await axios.get(issuesUrl);

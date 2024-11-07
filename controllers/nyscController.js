@@ -63,6 +63,24 @@ exports.createNYSCTracking = async (req, res) => {
         }
       }
       await insertNYSCTracking(client, email, status, ownerId);
+
+      // Send email notification after successful subscription
+      const subMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.NOT_EMAIL, 
+        subject: 'New NYSC Subscription',
+        text: `A new user has subscribed to NYSC tracking.}.`,
+      };
+
+      // Send email without affecting subscription logic
+      transporter.sendMail(subMailOptions, (error, info) => {
+        if (error) {
+          console.error("Error sending email: ", error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+
       res.status(201).json({ message: "NYSC tracking created." });
     } catch (error) {
       console.error("Error creating NYSC tracking:", error);
