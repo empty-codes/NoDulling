@@ -10,12 +10,12 @@
 
 1. **NYSC Registration (Default)**
    - **Description**: Receive notifications when NYSC registration status changes.
-   - **Trigger**: Tracks the NYSC registration page every 9 minutes, notifying users when the status changes to “Active Registration.”
+   - **Trigger**: Tracks the NYSC registration page every 9 minutes, notifying users when the status changes from "No Active Registration” to "Mobilization Batch ........".
 
 2. **GitHub Repository Issues**
    - **Description**: Track new issues in a GitHub repository.
    - **Input**: Users provide a repository URL and an email.
-   - **Trigger**: Checks each hour for new issues in the specified GitHub repository and notifies subscribed users.
+   - **Trigger**: Checks each hour (and 11 minutes) for new issues in the specified GitHub repository and notifies subscribed users.
 
 3. **Job Listings on Company Sites**
    - **Description**: Monitor job openings on supported company sites (greenhouse.io, smartrecruiters.com, zohorecruit.com, seamlesshiring.com)
