@@ -67,53 +67,35 @@ app.get("/", (req, res) => {
   `);
 });
 
+// // In deployment cron jobs don't run
+// const jobQueue = [];
 
-
-// In deployment, cron jobs run separately
-
-// let isJobRunning = false;
-
-// // Helper function to introduce a random delay
-// const delay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 10000));
-
-// // Schedule to check the NYSC registration page every 9 minutes
-// cron.schedule("*/9 * * * *", async () => {
-//   if (isJobRunning) return; // Exit if another job is already running
-//   isJobRunning = true;
-  
-//   try {
-//     await delay();
-//     await checkNYSCRegistrationPage();
-//   } finally {
-//     isJobRunning = false; 
+// // Add a new job to the queue
+// const enqueueJob = (job) => {
+//   jobQueue.push(job);
+//   if (jobQueue.length === 1) {
+//     runNextJob();
 //   }
-// });
+// };
 
-// // Schedule to check the GitHub repositories every hour
-// cron.schedule("*/7 * * * *", async () => {
-//   if (isJobRunning) return; 
-//   isJobRunning = true;
-  
-//   try {
-//     await delay();
-//     await checkGitHubRepos();
-//   } finally {
-//     isJobRunning = false; 
-//   }
-// });
+// const runNextJob = async () => {
+//   if (jobQueue.length === 0) return;
 
-// // Schedule the job site check every 23.7 hours (1422 mins)
-// cron.schedule("*/11 * * * *", async () => {
-//   if (isJobRunning) return; 
-//   isJobRunning = true;
-  
+//   const job = jobQueue[0];
 //   try {
-//     await delay();
-//     await checkJobSites();
+//     await job();
 //   } finally {
-//     isJobRunning = false; 
+//     jobQueue.shift(); // Remove the job from the queue
+//     if (jobQueue.length > 0) {
+//       runNextJob(); // Run the next job if there is one
+//     }
 //   }
-// });
+// };
+
+// // Use enqueueJob to add jobs
+// cron.schedule("*/9 * * * *", () => enqueueJob(checkNYSCRegistrationPage));
+// cron.schedule("11 */1 * * *", () => enqueueJob(checkGitHubRepos));
+// cron.schedule("*/1422 * * * *", () => enqueueJob(checkJobSites));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
