@@ -15,8 +15,7 @@ const NYSC_URLS = [
     "https://portal.nysc.org.ng/nysc1/",
     "https://portal.nysc.org.ng/nysc2/",
     "https://portal.nysc.org.ng/nysc3/",
-    "https://portal.nysc.org.ng/nysc4/",
-    "https://nodulling-nyscsitetest.netlify.app/"
+    "https://portal.nysc.org.ng/nysc4/"
   ];
 
 const transporter = nodemailer.createTransport({
