@@ -4,7 +4,9 @@
 
 ---
 **Live Site:** https://emptycodes.wixstudio.io/nodulling
-**Hosted API:** ttps://nodulling.onrender.com/
+
+**Hosted API:** https://nodulling.onrender.com/
+
 **Demo Link:** https://drive.google.com/file/d/1_rO9ufWEKPU7FPUbSmvYlox4qOl4t7na/view?usp=sharing
 
 ## Features
